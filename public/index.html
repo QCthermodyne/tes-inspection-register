@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#eef3fa">
-<meta name="description" content="Thermodyne Engineering Systems job inspection register: job folders, task photos and standard PDF inspection reports.">
+<meta name="description" content="Thermodyne Engineering Systems job inspection register: job folders, inspection tasks and standard PDF inspection reports.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -145,19 +145,6 @@ textarea{resize:vertical;min-height:84px}
 .status:empty{display:none}
 .status.err{color:var(--bad)}
 
-/* ---------- photo capture ---------- */
-label.pick{position:relative;display:flex;align-items:center;gap:14px;border:1.5px dashed rgba(10,114,201,.35);border-radius:18px;padding:16px;background:rgba(10,114,201,.04);cursor:pointer}
-label.pick:hover{border-color:var(--brand);background:rgba(10,114,201,.07)}
-label.pick:focus-within{outline:2px solid var(--cyan);outline-offset:2px}
-label.pick .ic{width:50px;height:50px;border-radius:15px;background:linear-gradient(160deg,#4fb0ff,#0a6cc2);color:#fff;display:grid;place-items:center;flex:0 0 auto;box-shadow:0 10px 22px -10px var(--brand-glow)}
-label.pick strong{display:block;font:600 16px/1.2 var(--f-body);color:var(--ink);margin-bottom:3px}
-label.pick span.t{font-size:13.5px;color:var(--muted)}
-label.pick input{position:absolute;opacity:0;width:1px;height:1px}
-.thumbs{display:flex;gap:10px;flex-wrap:wrap}
-.thumbs:empty{display:none}
-.thumb{position:relative;width:88px;height:88px;border-radius:16px;overflow:hidden;border:1px solid var(--stroke-hi);background:var(--field);box-shadow:0 10px 24px -14px rgba(20,45,90,.5)}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.thumb button{position:absolute;top:5px;right:5px;min-height:0;width:26px;height:26px;padding:0;font-size:12px;border-radius:999px;background:rgba(14,26,46,.7);color:#fff;border:0}
 
 /* ---------- pills & folder stats ---------- */
 .pill{display:inline-flex;align-items:center;gap:6px;font:600 10.5px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;padding:6px 10px 6px 8px;border-radius:999px;white-space:nowrap;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
@@ -226,8 +213,6 @@ label.pick input{position:absolute;opacity:0;width:1px;height:1px}
 .tcard .actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--stroke);margin-top:2px;padding-top:12px}
 .tcard .actions button{min-height:38px;padding:8px 12px;font-size:14px;font-weight:500;border-radius:12px}
 .tcard .actions button.danger{color:var(--bad)}
-.photo-view{display:flex;flex-direction:column;gap:10px}
-.photo-view img{border-radius:16px;border:1px solid var(--stroke)}
 
 /* ---------- feedback ---------- */
 .confirm{background:var(--bad-bg);color:var(--bad);border:1px solid rgba(210,58,74,.25);border-radius:var(--r-md);padding:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
@@ -357,27 +342,7 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 .act-row .tx span{font-size:12.5px;color:var(--muted)}
 .act-row time{font-size:12px;color:var(--muted);white-space:nowrap}
 
-/* cinematic gallery */
-.gallery{display:grid;grid-auto-flow:column;grid-auto-columns:min(78%,420px);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;scrollbar-width:none;overscroll-behavior-x:contain}
-.gallery::-webkit-scrollbar{display:none}
-.shot{all:unset;box-sizing:border-box;position:relative;scroll-snap-align:center;aspect-ratio:16/10;border-radius:22px;overflow:hidden;cursor:pointer;border:1px solid var(--stroke-hi);box-shadow:0 26px 50px -28px rgba(20,45,90,.6);background:#dfe8f4;max-width:100%}
-.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:translateX(var(--par,0px)) scale(1.18);transition:transform .2s linear}
-.shot::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(8,20,40,.85));pointer-events:none}
-.shot .cap{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;display:flex;flex-direction:column;gap:4px}
-.shot .cap b{font:600 16px/1.2 var(--f-display);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}
-.shot .cap span{font-size:12.5px;color:rgba(235,242,255,.88)}
-.shot:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
-.shot .badge{position:absolute;top:12px;left:12px;z-index:1}
-.shot .badge .pill{background:rgba(255,255,255,.94);border-color:transparent}
-.lightbox{position:fixed;inset:0;z-index:30;background:rgba(238,243,250,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px))}
-.lightbox .lb-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.lightbox .lb-stage{position:relative;overflow:hidden;border-radius:22px;border:1px solid #fff;display:grid;place-items:center;background:#0e1a2e;box-shadow:var(--shadow)}
-.lightbox .lb-stage img{max-width:100%;max-height:100%;object-fit:contain}
-@media (prefers-reduced-motion:no-preference){.lightbox .lb-stage img{animation:kenburns 9s ease-out both}}
-.lightbox .lb-cap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.lightbox .lb-cap b{font:600 18px/1.2 var(--f-display)}
-.lightbox .lb-nav{display:flex;gap:8px}
-.lightbox button{min-height:44px}
+
 
 /* ---------- motion ---------- */
 @keyframes spin{to{transform:rotateX(58deg) rotateZ(360deg)}}
@@ -387,7 +352,7 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 @keyframes rise{from{opacity:0;translate:0 16px;filter:blur(6px)}to{opacity:1;translate:0 0;filter:none}}
 @keyframes drift{50%{transform:translate3d(4vmax,-3vmax,0) scale(1.08)}}
 @media (prefers-reduced-motion:no-preference){
-  button,input,select,textarea,label.pick{transition:background-color .2s,border-color .2s,box-shadow .2s,filter .2s,transform .12s,color .2s}
+  button,input,select,textarea{transition:background-color .2s,border-color .2s,box-shadow .2s,filter .2s,transform .12s,color .2s}
   button:active:not(:disabled){transform:scale(.97)}
   .space .blob{animation:drift 22s ease-in-out infinite}
   .space .b2{animation-duration:28s;animation-direction:reverse}
@@ -437,12 +402,8 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
         <div class="list" id="sites" style="gap:12px"></div>
       </div>
 
-      <div class="tile span-8" style="--i:6">
-        <div class="row" style="justify-content:space-between;align-items:baseline"><h3>Site gallery</h3><span class="sub" id="gal-sub"></span></div>
-        <div class="gallery" id="gallery"></div>
-      </div>
 
-      <div class="tile span-4" style="--i:7">
+      <div class="tile span-12" style="--i:6">
         <h3>Recent activity</h3>
         <div class="activity" id="activity"></div>
       </div>
@@ -518,15 +479,6 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 
     <form class="panel sheet" id="task-form" hidden novalidate>
       <div class="sheet-hd"><h2 id="task-title">New task</h2><button type="button" class="ghost" id="task-close">Cancel</button></div>
-      <label class="pick" for="photo-in">
-        <span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.5-2h5L16 6h1.5A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
-        <span><strong>Capture task photo</strong><span class="t">Opens the camera. Photos stay in the folder and are not printed in the PDF.</span></span>
-        <input id="photo-in" type="file" accept="image/*" capture="environment" multiple>
-      </label>
-      <div class="thumbs" id="thumbs"></div>
-      <button type="button" class="ghost" id="suggest-btn" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></svg>Suggest details from photo</button>
-      <p class="status muted" id="suggest-status"></p>
-      <div class="divider"></div>
       <div class="field"><span class="label">Inspection category</span><div class="chips" id="cat-chips" role="group" aria-label="Inspection category"></div></div>
       <div class="grid">
         <div class="field req"><span class="label">Task date</span><input id="t-date" type="date"></div>
@@ -583,7 +535,7 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-/* Vercel backend adapter: provides the same db / assets / sample / downloads
+/* Vercel backend adapter: provides the db / downloads
    interfaces the app was written against, backed by this site's /api routes. */
 window.TES = (() => {
   const loginEl = () => document.getElementById("login");
@@ -644,26 +596,7 @@ window.TES = (() => {
   }
   const db = { collection, doc };
 
-  const assets = {
-    async upload(blob, opts = {}) {
-      const r = await API("/api/photo", { method: "POST", headers: { "content-type": opts.type || blob.type || "image/jpeg" }, body: blob });
-      return r.json();
-    },
-    async delete(id) { await API("/api/photo?id=" + encodeURIComponent(id), { method: "DELETE" }); return { deleted: true }; },
-  };
 
-  const b64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(blob); });
-  let suggestCfg = null;
-  const sample = async () => { throw { code: "capability_removed" }; };
-  sample.limits = async () => {
-    if (!suggestCfg) { try { suggestCfg = await (await API("/api/suggest")).json(); } catch { suggestCfg = { configured: false }; } }
-    return suggestCfg.configured ? { maxPromptBytes: 262144, images: { maxCount: suggestCfg.maxImages || 4, maxInputBytes: 4194304, mediaTypes: ["image/jpeg", "image/png", "image/webp"] } } : { maxPromptBytes: 262144 };
-  };
-  sample.json = async (prompt, opts = {}) => {
-    const imgs = await Promise.all([...(opts.images || [])].slice(0, 4).map(async b => ({ type: b.type || "image/jpeg", data: await b64(b) })));
-    const r = await API("/api/suggest", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, images: imgs }) });
-    return (await r.json()).data;
-  };
 
   const downloads = {
     async save({ filename, data }) {
@@ -682,7 +615,7 @@ window.TES = (() => {
     catch { return { ok: false, offline: true }; }
   }
   const all = async () => (await API("/api/db?all=1")).json();
-  return { db, assets, sample, downloads, signedIn, showLogin, all, photoUrl: id => "/api/photo?id=" + encodeURIComponent(id) };
+  return { db, downloads, signedIn, showLogin, all };
 })();
 </script>
 <script>
@@ -730,9 +663,8 @@ const JOB_FIELDS = [
   ["description", "Job description", false, "textarea"]
 ];
 
-let db = null, assets = null, sample = null, downloads = null, imgOK = false, isAdmin = false;
-let jobsCache = [], openJob = null, unsubTasks = null, tasksCache = [], editJobId = null, editTaskId = null, editTaskPhotos = [];
-let photos = [];
+let db = null, downloads = null, isAdmin = false;
+let jobsCache = [], openJob = null, unsubTasks = null, tasksCache = [], editJobId = null, editTaskId = null;
 
 /* ---------- toast ---------- */
 let toastT;
@@ -842,7 +774,6 @@ async function adminDeleteTask(j, t, row, btn) {
   try {
     const col = db.doc("jobs/" + j.id).collection("tasks");
     await col.doc(t.id).delete();
-    if (assets) for (const id of t.photoIds || []) assets.delete(id).catch(() => {});
     const rest = (await col.get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.id !== t.id);
     const last = [...rest].sort(byDateSeq).pop();
     await db.doc("jobs/" + j.id).update({ taskCount: rest.length, notOk: rest.filter(x => x.status === "Not OK").length, lastDate: last ? last.date : "", updatedAt: Date.now() }).catch(() => {});
@@ -957,7 +888,7 @@ async function deleteFolder(j, btn) {
   try {
     const col = db.doc("jobs/" + j.id).collection("tasks");
     const snap = await col.get();
-    for (const d of snap.docs) { await col.doc(d.id).delete(); if (assets) for (const id of d.data().photoIds || []) assets.delete(id).catch(() => {}); }
+    for (const d of snap.docs) { await col.doc(d.id).delete(); }
     await db.doc("jobs/" + j.id).delete();
     toast(`Folder Job ${j.jobNo} / ORF ${j.orfNo} deleted.`);
   } catch (e) { btn.disabled = false; if (e?.code === "admin_only") { setAdmin(false); toast("Admin is locked. Unlock Admin to delete."); } else toast("Couldn’t delete the folder. Try again."); }
@@ -973,7 +904,7 @@ function renderReportCard() {
 }
 function renderTasks() {
   if (!tasksCache.length) {
-    $("task-list").replaceChildren(el("div", { class: "empty" }, el("span", { class: "ic" }, ico("list", 24)), el("strong", {}, "No tasks yet"), el("span", {}, "Tap “Create task” to capture a photo and record the first inspection. The PDF report builds itself from the tasks you add.")));
+    $("task-list").replaceChildren(el("div", { class: "empty" }, el("span", { class: "ic" }, ico("list", 24)), el("strong", {}, "No tasks yet"), el("span", {}, "Tap “Create task” to record the first inspection. The PDF report builds itself from the tasks you add.")));
     return;
   }
   const groups = {};
@@ -983,7 +914,6 @@ function renderTasks() {
     ...ts.map(taskCard))));
 }
 function taskCard(t) {
-  const photoBox = el("div", { class: "photo-view list", hidden: true });
   return el("div", { class: "tcard" },
     el("div", { class: "hd" },
       el("div", {}, el("div", { class: "seq" }, `T-${String(t.seq || 0).padStart(3, "0")}${t.area ? " · " + t.area : ""}`), el("div", { class: "act" }, t.activity)),
@@ -992,14 +922,9 @@ function taskCard(t) {
     t.remarks ? el("p", { class: "muted" }, "Remarks: " + t.remarks) : null,
     el("p", { class: "by" }, `Inspected by ${t.inspectedBy}`),
     el("div", { class: "actions" },
-      (t.photoIds || []).length ? el("button", { type: "button", onclick: () => {
-        if (!photoBox.childElementCount) photoBox.append(...t.photoIds.map(id => el("img", { src: TES.photoUrl(id), alt: "Task photo", loading: "lazy" })));
-        photoBox.hidden = !photoBox.hidden;
-      } }, ico("image"), `Photo${t.photoIds.length > 1 ? "s (" + t.photoIds.length + ")" : ""}`) : null,
       el("button", { type: "button", class: "primary", onclick: e => makeTaskPDF(t, e.currentTarget) }, ico("download"), "PDF report"),
       el("button", { type: "button", onclick: () => openTaskForm(t) }, ico("edit"), "Edit"),
-      null),
-    photoBox);
+      null));
 }
 async function refreshJobSummary(list) {
   const j = openJob; if (!j) return;
@@ -1011,7 +936,6 @@ async function refreshJobSummary(list) {
 async function delTask(t) {
   try {
     await db.doc("jobs/" + openJob.id).collection("tasks").doc(t.id).delete();
-    if (assets) for (const id of t.photoIds || []) assets.delete(id).catch(() => {});
     await refreshJobSummary(tasksCache.filter(x => x.id !== t.id));
     toast("Task deleted.");
   } catch (e) { if (e?.code === "admin_only") { setAdmin(false); toast("Admin is locked. Unlock Admin to delete."); } else toast("Couldn’t delete. Try again."); }
@@ -1025,16 +949,14 @@ function lastInspector() {
   return t?.inspectedBy || openJob?.inspector || "";
 }
 function openTaskForm(t) {
-  editTaskId = t ? t.id : null; editTaskPhotos = t ? [...(t.photoIds || [])] : [];
-  photos.forEach(p => URL.revokeObjectURL(p.url)); photos = [];
+  editTaskId = t ? t.id : null;
   $("t-date").value = t?.date || today(); $("t-by").value = t?.inspectedBy || lastInspector();
   $("t-act").value = t?.activity || ""; setArea(t?.area || ""); $("t-status").value = t?.status || "OK";
   $("t-obs").value = t?.observation || ""; $("t-rem").value = t?.remarks || "";
   curCat = t ? catOf(t) : (curCat || "hydro"); setCat(curCat, false); renderCatFields(t?.d || {}); $("t-status").value = t?.status || "OK";
   $("task-title").textContent = t ? `Edit task T-${String(t.seq || 0).padStart(3, "0")}` : "New task";
   $("task-save").textContent = t ? "Save changes" : "Save task";
-  $("task-status").textContent = ""; $("suggest-status").textContent = imgOK ? "" : "Photo suggestions aren’t available here. Type the details.";
-  renderThumbs();
+  $("task-status").textContent = "";
   $("task-form").hidden = false; $("create-task").hidden = true;
   $("task-form").scrollIntoView({ block: "start" });
 }
@@ -1046,60 +968,7 @@ function setArea(v) {
 }
 function closeTaskForm() {
   $("task-form").hidden = true; $("create-task").hidden = false; editTaskId = null;
-  photos.forEach(p => URL.revokeObjectURL(p.url)); photos = [];
 }
-async function shrink(file) {
-  const bmp = await createImageBitmap(file).catch(() => null);
-  if (!bmp) return file;
-  const sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
-  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
-  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-  return await new Promise(r => c.toBlob(b => r(b || file), "image/jpeg", 0.82));
-}
-$("photo-in").addEventListener("change", async e => {
-  for (const f of e.target.files) { const b = await shrink(f); photos.push({ blob: b, url: URL.createObjectURL(b) }); }
-  e.target.value = ""; renderThumbs();
-});
-function renderThumbs() {
-  $("thumbs").replaceChildren(
-    ...editTaskPhotos.map((id, i) => el("div", { class: "thumb" }, el("img", { src: TES.photoUrl(id), alt: "Saved photo" }),
-      el("button", { type: "button", "aria-label": "Remove photo", onclick: () => { editTaskPhotos.splice(i, 1); renderThumbs(); } }, "✕"))),
-    ...photos.map((p, i) => el("div", { class: "thumb" }, el("img", { src: p.url, alt: `New photo ${i + 1}` }),
-      el("button", { type: "button", "aria-label": "Remove photo", onclick: () => { URL.revokeObjectURL(p.url); photos.splice(i, 1); renderThumbs(); } }, "✕"))));
-  $("suggest-btn").disabled = !photos.length || !imgOK;
-}
-
-$("suggest-btn").onclick = async () => {
-  if (!sample || !photos.length) return;
-  const st = $("suggest-status"); st.className = "status muted"; st.textContent = "Looking at the photo… this can take up to a minute.";
-  $("suggest-btn").disabled = true;
-  const j = openJob;
-  const prompt = `You help an engineering inspector at Thermodyne Engineering Systems write a daily inspection task entry.
-Job context: Job No. ${j.jobNo}, ORF No. ${j.orfNo}, client ${j.client || "-"}, item ${j.item || "-"}, inspection stage ${j.stage || "-"}.
-The image(s) were taken on site for one inspection task. They may show equipment, a weld, an assembly, work in progress, a gauge, or a printed / handwritten sheet.
-${$("t-act").value.trim() ? "The inspector says the task is: " + $("t-act").value.trim() + "\n" : ""}
-Reply with only one JSON object: {"activity":"","observation":"","status":"OK"}
-- activity: short name of the inspection task (max 10 words).
-- observation: 1-2 short factual sentences in inspection-report style, describing only what is visible. If a sheet is shown, use its written values. Never invent measurements.
-- status: "OK", "Not OK" (visible defect or rejection) or "Pending" (cannot judge from the photo).`;
-  try {
-    const lim = await sample.limits().catch(() => null);
-    const d = await sample.json(prompt, { images: photos.slice(0, lim?.images?.maxCount || 1).map(p => p.blob) });
-    if (d && typeof d === "object") {
-      if (!$("t-act").value.trim() && d.activity) $("t-act").value = String(d.activity);
-      if (!$("t-obs").value.trim() && d.observation) $("t-obs").value = String(d.observation);
-      if (["OK", "Not OK", "Pending"].includes(d.status)) $("t-status").value = d.status;
-    }
-    st.textContent = "Suggestion added to empty fields. Check and edit before saving.";
-  } catch (e) {
-    st.className = "status err";
-    const c = e?.code;
-    st.textContent = c === "not_granted" || c === "sampling_disabled" ? "Photo suggestions aren’t set up. Type the details."
-      : c === "rate_limited" ? "Too many requests just now. Wait a minute and try again."
-      : c === "image_rejected" ? "That photo couldn’t be read. Try another one."
-      : "Couldn’t get a suggestion. Type the details or try again.";
-  } finally { $("suggest-btn").disabled = !photos.length || !imgOK; }
-};
 
 $("task-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -1110,18 +979,13 @@ $("task-form").addEventListener("submit", async e => {
   if (miss.length) { st.className = "status err"; st.textContent = "Fill in: " + miss.join(", ") + "."; return; }
   $("task-save").disabled = true; st.textContent = "Saving…";
   try {
-    const ids = [...editTaskPhotos];
-    let failed = 0;
-    if (assets) for (const p of photos) { try { ids.push((await assets.upload(p.blob, { type: "image/jpeg" })).id); } catch { failed++; } }
-    else failed = photos.length;
-    t.photoIds = ids; t.updatedAt = Date.now();
+    t.updatedAt = Date.now();
     const col = db.doc("jobs/" + openJob.id).collection("tasks");
     let list;
     if (editTaskId) {
       const old = tasksCache.find(x => x.id === editTaskId);
       await col.doc(editTaskId).update(t);
       list = tasksCache.map(x => x.id === editTaskId ? { ...x, ...t } : x);
-      if (assets && old) for (const id of (old.photoIds || []).filter(id => !ids.includes(id))) assets.delete(id).catch(() => {});
     } else {
       t.seq = Math.max(0, ...tasksCache.map(x => x.seq || 0)) + 1; t.createdAt = t.updatedAt;
       const ref = col.doc(); await ref.set(t);
@@ -1129,7 +993,7 @@ $("task-form").addEventListener("submit", async e => {
     }
     await refreshJobSummary(list);
     closeTaskForm();
-    toast(failed ? `Task saved, but ${failed} photo(s) couldn’t be stored.` : "Task saved. The report is updated.", { label: "PDF", fn: () => { const saved = tasksCache.find(x => x.seq === t.seq && x.date === t.date) || t; makeTaskPDF(saved); } });
+    toast("Task saved. The report is updated.", { label: "PDF", fn: () => { const saved = tasksCache.find(x => x.seq === t.seq && x.date === t.date) || t; makeTaskPDF(saved); } });
   } catch (err) {
     st.className = "status err"; st.textContent = err?.code === "quota_exceeded" ? "Storage is full. Delete old tasks and try again." : "Couldn’t save. Check your connection and try again.";
   } finally { $("task-save").disabled = false; }
@@ -1459,7 +1323,7 @@ $("xl-btn").onclick = async () => {
 
 /* ---------- OVERVIEW dashboard ---------- */
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-let dashData = null, gallerySet = [];
+let dashData = null;
 const isoDay = d => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
 
 async function loadDash() {
@@ -1521,16 +1385,6 @@ function renderDash() {
       el("span", { class: "tx" }, el("b", {}, t.activity || "Task"), el("span", {}, `Job ${t.job.jobNo || "?"} · ${t.inspectedBy || ""}`)),
       el("time", {}, fmtDate(t.date)))) : [el("p", { class: "muted" }, "Tasks you save appear here.")]));
 
-  // gallery
-  gallerySet = [...T].filter(t => (t.photoIds || []).length).sort((x, y) => (y.date || "").localeCompare(x.date || "") || (y.createdAt || 0) - (x.createdAt || 0))
-    .flatMap(t => t.photoIds.map(pid => ({ pid, t }))).slice(0, 24);
-  $("gal-sub").textContent = gallerySet.length ? `${gallerySet.length} photo${gallerySet.length > 1 ? "s" : ""}` : "";
-  $("gallery").replaceChildren(...(gallerySet.length ? gallerySet.map(({ pid, t }, i) => el("button", { class: "shot", type: "button", onclick: () => openLightbox(i), "aria-label": `Open photo: ${t.activity}` },
-      el("img", { src: TES.photoUrl(pid), alt: "", loading: "lazy", decoding: "async" }),
-      el("span", { class: "badge" }, pill(t.status)),
-      el("span", { class: "cap" }, el("b", {}, t.activity || "Task photo"), el("span", {}, `Job ${t.job.jobNo || "?"} · ORF ${t.job.orfNo || "?"} · ${fmtDate(t.date)}${t.area ? " · " + t.area : ""}`)))) :
-    [el("div", { class: "empty", style: "grid-column:1/-1;width:100%" }, el("span", { class: "ic" }, ico("image", 24)), el("strong", {}, "No photos yet"), el("span", {}, "Photos captured with Create task appear here as a gallery."))]));
-  galleryParallax();
 }
 function countUp(node, to, suffix = "") {
   if (REDUCED) { node.textContent = to + suffix; return; }
@@ -1538,40 +1392,6 @@ function countUp(node, to, suffix = "") {
   const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); node.textContent = Math.round(from + (to - from) * e) + suffix; if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
-function galleryParallax() {
-  const g = $("gallery");
-  const run = () => { const r = g.getBoundingClientRect(), mid = r.left + r.width / 2; for (const s of g.querySelectorAll(".shot")) { const b = s.getBoundingClientRect(); s.style.setProperty("--par", `${((b.left + b.width / 2) - mid) * -0.12}px`); } };
-  if (!g.dataset.bound) { g.dataset.bound = "1"; g.addEventListener("scroll", () => requestAnimationFrame(run), { passive: true }); }
-  if (!REDUCED) run();
-}
-/* lightbox */
-let lbIndex = 0;
-function openLightbox(i) {
-  lbIndex = i;
-  let lb = $("lightbox");
-  if (!lb) {
-    lb = el("div", { id: "lightbox", class: "lightbox", role: "dialog", "aria-modal": "true", "aria-label": "Photo viewer" },
-      el("div", { class: "lb-top" }, el("span", { class: "label", id: "lb-count" }), el("button", { type: "button", class: "ghost", onclick: closeLightbox }, "Close")),
-      el("div", { class: "lb-stage", id: "lb-stage" }),
-      el("div", { class: "lb-cap" }, el("div", {}, el("b", { id: "lb-title" }), el("div", { class: "muted", id: "lb-meta", style: "font-size:13px;margin-top:4px" })),
-        el("div", { class: "lb-nav" }, el("button", { type: "button", onclick: () => stepLightbox(-1), "aria-label": "Previous photo" }, "‹ Prev"), el("button", { type: "button", onclick: () => stepLightbox(1), "aria-label": "Next photo" }, "Next ›"))));
-    document.body.append(lb);
-    let x0 = null;
-    lb.addEventListener("pointerdown", e => x0 = e.clientX);
-    lb.addEventListener("pointerup", e => { if (x0 != null && Math.abs(e.clientX - x0) > 50) stepLightbox(e.clientX < x0 ? 1 : -1); x0 = null; });
-    document.addEventListener("keydown", e => { if ($("lightbox")?.hidden !== false) return; if (e.key === "Escape") closeLightbox(); if (e.key === "ArrowRight") stepLightbox(1); if (e.key === "ArrowLeft") stepLightbox(-1); });
-  }
-  lb.hidden = false; paintLightbox();
-}
-function paintLightbox() {
-  const { pid, t } = gallerySet[lbIndex];
-  $("lb-stage").replaceChildren(el("img", { src: TES.photoUrl(pid), alt: t.activity || "Task photo" }));
-  $("lb-title").textContent = t.activity || "Task photo";
-  $("lb-meta").textContent = `Job ${t.job.jobNo || "?"} · ORF ${t.job.orfNo || "?"} · ${fmtDate(t.date)} · ${t.inspectedBy || ""} · ${t.status}`;
-  $("lb-count").textContent = `${lbIndex + 1} / ${gallerySet.length}`;
-}
-function stepLightbox(d) { if (!gallerySet.length) return; lbIndex = (lbIndex + d + gallerySet.length) % gallerySet.length; paintLightbox(); }
-function closeLightbox() { $("lightbox").hidden = true; }
 
 /* ---------- 3D tilt, specular light and parallax ---------- */
 (() => {
@@ -1618,10 +1438,9 @@ $("today-chip").textContent = new Date().toLocaleDateString("en-IN", { weekday: 
     });
     return;
   }
-  ({ db, assets, sample, downloads } = TES);
+  ({ db, downloads } = TES);
   setAdmin(!!who.admin);
   show("home");
-  if (sample) { const lim = await sample.limits().catch(() => null); imgOK = !!lim?.images; }
   if (!db) { $("job-list").replaceChildren(el("div", { class: "empty" }, el("strong", {}, "Storage unavailable"), el("span", {}, "Reload the page to try again."))); return; }
   db.collection("jobs").onSnapshot(s => {
     jobsCache = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
