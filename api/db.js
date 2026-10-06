@@ -8,6 +8,17 @@ export async function GET(request) {
   const q = new URL(request.url).searchParams;
   const { db } = await load();
   const col = q.get("col"), doc = q.get("doc");
+  if (q.get("all")) {
+    // Everything at once, for the Overview dashboard.
+    const jobs = Object.entries(db.jobs).map(([id, d]) => ({ id, data: clean(d) })).filter((d) => d.data);
+    const live = new Set(jobs.map((j) => j.id));
+    const tasks = [];
+    for (const [jobId, ts] of Object.entries(db.tasks)) {
+      if (!live.has(jobId)) continue;
+      for (const [id, d] of Object.entries(ts)) { const c = clean(d); if (c) tasks.push({ jobId, id, data: c }); }
+    }
+    return json({ jobs, tasks });
+  }
   if (col) {
     const m = col.match(COL_RE);
     if (!m) return json({ error: "Bad collection path.", code: "invalid_argument" }, 400);
