@@ -21,7 +21,8 @@ Works on any phone browser; on Android choose **Add to Home screen** to use it l
 
 | Name | Needed | What it is |
 |---|---|---|
-| `APP_PIN` | yes | The team PIN used to sign in. Changing it signs everyone out. |
+| `PIN_REQUIRED` | optional | Set to `1` to require a PIN. Without it, anyone with the link can use the app. |
+| `APP_PIN` | optional | The team PIN, used only when `PIN_REQUIRED=1`. |
 | `BLOB_READ_WRITE_TOKEN` | yes | Added automatically when the Blob store is connected. |
 | `ANTHROPIC_API_KEY` | optional | Turns on **Suggest details from photo**. |
 | `ANTHROPIC_MODEL` | optional | Model for suggestions (default `claude-sonnet-5-5`). |

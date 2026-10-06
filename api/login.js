@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
-import { authed, authCookie, json, token } from "../lib/http.js";
+import { authed, authCookie, json, token, pinRequired } from "../lib/http.js";
 
 // GET: is this phone signed in?
 export function GET(request) {
-  return json({ ok: authed(request), configured: !!process.env.APP_PIN });
+  return json({ ok: authed(request), configured: !!process.env.APP_PIN, pinRequired: pinRequired() });
 }
 
 // POST {pin}: sign in for 90 days.
