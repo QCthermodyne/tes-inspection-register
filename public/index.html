@@ -425,6 +425,14 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
     <div id="admin-area" class="list" hidden style="gap:16px">
       <button class="tag cta" id="admin-new"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Create new job</button>
       <div class="panel">
+        <div class="row" style="justify-content:space-between;align-items:baseline"><h2>Daily summary report</h2><span class="count" id="ds-count"></span></div>
+        <p class="lede" style="font-size:14px">One-page PDF of every inspection done on the chosen date, across all jobs.</p>
+        <div class="row" style="align-items:flex-end">
+          <div class="field" style="flex:1 1 180px"><span class="label">Date</span><input id="ds-date" type="date"></div>
+          <button class="primary" id="ds-btn" style="flex:1 1 180px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download summary PDF</button>
+        </div>
+      </div>
+      <div class="panel">
         <div class="row" style="justify-content:space-between;align-items:baseline"><h2>Manage job folders</h2><span class="count" id="admin-count"></span></div>
         <p class="lede" style="font-size:14px">Edit job details, delete a folder, or tap <b>Tasks</b> to delete individual tasks.</p>
         <div class="list" id="admin-list"></div>
@@ -687,7 +695,7 @@ function show(view) {
     hero.style.viewTransitionName = view === "job" && morphFrom ? "morph" : "";
     window.scrollTo(0, 0);
   };
-  const done = () => { document.querySelector(".folderhead").style.viewTransitionName = ""; morphFrom = null; if (view === "home") loadDash(); };
+  const done = () => { document.querySelector(".folderhead").style.viewTransitionName = ""; morphFrom = null; if (view === "home") loadDash(); if (view === "admin") updateDsCount(); };
   if (document.startViewTransition && !REDUCED && document.visibilityState === "visible") {
     try { document.startViewTransition(apply).finished.finally(done); return; } catch {}
   }
@@ -702,6 +710,8 @@ $("admin-new").onclick = () => { resetJobForm(); show("new"); };
 /* ---------- ADMIN ---------- */
 function setAdmin(on) {
   isAdmin = on;
+  if (on && !$("ds-date").value) { $("ds-date").value = today(); }
+  if (on) updateDsCount();
   $("admin-gate").hidden = on; $("admin-area").hidden = !on; $("admin-lock").hidden = !on;
   document.body.classList.toggle("is-admin", on);
   renderAdmin();
@@ -1303,6 +1313,109 @@ async function makeTaskPDF(t, btn) {
     const short = { hydro: "Hydro-Test", general: "General-Inspection", dp: "DP-Test", pdir: "PDIR", fir: "Final-Inspection" }[k];
     await offer(`${short}_Job-${fileSafe(j.jobNo)}_ORF-${fileSafe(j.orfNo)}_${taskNo(t)}_${fmtDate(t.date)}.pdf`, doc.output("blob"));
   } finally { if (btn) btn.disabled = false; }
+}
+
+/* ---------- ADMIN: day-wise summary of all jobs (one page) ---------- */
+let dsTimer;
+async function updateDsCount() {
+  const d = $("ds-date").value; if (!d || !isAdmin) return;
+  try { const all = await TES.all(); const n = all.tasks.filter(t => t.data.date === d).length; $("ds-count").textContent = `${n} inspection${n === 1 ? "" : "s"} on ${fmtDate(d)}`; } catch {}
+}
+$("ds-date").addEventListener("change", () => { clearTimeout(dsTimer); dsTimer = setTimeout(updateDsCount, 150); });
+$("ds-btn").onclick = e => makeDailySummary($("ds-date").value, e.currentTarget);
+
+async function makeDailySummary(date, btn) {
+  if (!isAdmin) { toast("Unlock Admin to download the summary."); return; }
+  if (!date) { toast("Choose a date first."); return; }
+  if (!window.jspdf) { toast("PDF tool didn’t load. Check your connection."); return; }
+  btn.disabled = true;
+  try {
+    const all = await TES.all();
+    const jobs = Object.fromEntries(all.jobs.map(j => [j.id, j.data]));
+    const ts = all.tasks.filter(t => t.data.date === date && jobs[t.jobId]).map(t => ({ ...t.data, id: t.id, job: jobs[t.jobId] }))
+      .sort((a, b) => (a.job.jobNo || "").localeCompare(b.job.jobNo || "") || (a.seq || 0) - (b.seq || 0));
+    if (!ts.length) { toast(`No inspections on ${fmtDate(date)}.`); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 210, M = 7, CW = W - 2 * M;
+    try { doc.addImage(HDR_IMG, "JPEG", 0, 0, W, 31.3); } catch {}
+    doc.setTextColor(255); doc.setFont("helvetica", "bold");
+    doc.setFontSize(16); doc.text("DAILY SUMMARY", W - 5, 12, { align: "right" }); doc.text("REPORT", W - 5, 18.5, { align: "right" });
+    doc.setFontSize(10); doc.text("ALL JOBS", W - 5, 25, { align: "right" });
+    doc.setFillColor(...ORANGE); doc.rect(0, 31.3, W, 1, "F");
+    // report box
+    const repNo = `TES/DSR/${date.split("-").reverse().join("")}`;
+    doc.setFillColor(238, 242, 248); doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.rect(W - M - 72, 35, 72, 12.6, "FD");
+    doc.setFontSize(9); doc.setTextColor(...INK);
+    [["Report No.", repNo], ["Date", fmtDate(date)]].forEach(([a, b], i) => { const yy = 39.3 + i * 5; doc.setFont("helvetica", "bold"); doc.text(a, W - M - 68, yy); doc.text(":", W - M - 47, yy); doc.setFont("helvetica", "normal"); doc.text(b, W - M - 44, yy); });
+    let y = 51, sec = 0;
+    const section = title => { sec++; doc.setFillColor(...NAVY); doc.rect(M, y, CW, 6.4, "F"); doc.setTextColor(255); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.text(`${sec}.  ${title}`, M + 3, y + 4.6); y += 6.9; };
+    const lbl = { fontStyle: "bold", fillColor: LBL, textColor: INK };
+    const n = ts.length, c = s => ts.filter(t => t.status === s).length;
+    const jobsDone = [...new Set(ts.map(t => t.job.jobNo))];
+    const inspectors = [...new Set(ts.map(t => t.inspectedBy).filter(Boolean))];
+    const sites = [...new Set(ts.map(t => t.area).filter(Boolean))];
+    // 1. summary
+    section("DAY SUMMARY");
+    const kv = { theme: "grid", margin: { left: M, right: M }, styles: { fontSize: 8.8, cellPadding: { top: 1.2, bottom: 1.2, left: 2.2, right: 2.2 }, lineColor: LINE, lineWidth: 0.25, textColor: INK, minCellHeight: 5.6, valign: "middle" } };
+    doc.autoTable({ ...kv, startY: y, body: [
+      ["Inspection date", fmtDate(date), "Jobs inspected", `${jobsDone.length} (${jobsDone.join(", ")})`],
+      ["Total inspections", String(n), "Result", `OK ${c("OK")}   |   Not OK ${c("Not OK")}   |   Pending ${c("Pending")}`],
+      ["Inspected by", inspectors.join(", ") || "-", "Locations", sites.join(", ") || "-"],
+      ["By category", { content: CAT_ORDER.map(k => [CATS[k].name, ts.filter(t => catOf(t) === k).length]).filter(x => x[1]).map(([a, b]) => `${a}: ${b}`).join("   |   "), colSpan: 3 }]],
+      columnStyles: { 0: { cellWidth: 34, ...lbl }, 1: { cellWidth: CW / 2 - 34 }, 2: { cellWidth: 34, ...lbl }, 3: { cellWidth: CW / 2 - 34 } } });
+    y = doc.lastAutoTable.finalY + 2.6;
+    // 2. all inspections, sized to stay on one page
+    section("INSPECTIONS CARRIED OUT");
+    const big = n <= 22, mid = n <= 34;
+    const fs = big ? 8 : mid ? 7 : 6.1, pad = big ? 1.1 : mid ? 0.7 : 0.45;
+    const col = s => s === "OK" ? [24, 128, 64] : s === "Not OK" ? [190, 30, 45] : [160, 100, 0];
+    doc.autoTable({ theme: "grid", margin: { left: M, right: M, bottom: 42 }, startY: y,
+      head: [["Sl.", "Job No.", "ORF No.", "Client", "Report No.", "Category", "Task / Activity", "Location", "Inspected by", "Result"]],
+      body: ts.map((t, i) => [i + 1, t.job.jobNo, t.job.orfNo, t.job.client || "-", `${t.job.jobNo}/IR/${taskNo(t)}`, CATS[catOf(t)].name, t.activity || "-", t.area || "-", t.inspectedBy || "-", t.status === "OK" ? "OK" : t.status === "Not OK" ? "Not OK" : "Pending"]),
+      headStyles: { fillColor: LBL, textColor: INK, fontStyle: "bold", halign: "center", lineColor: LINE, lineWidth: 0.25, fontSize: fs },
+      styles: { fontSize: fs, cellPadding: { top: pad, bottom: pad, left: 1.6, right: 1.6 }, lineColor: LINE, lineWidth: 0.25, textColor: INK, valign: "middle", overflow: "linebreak" },
+      columnStyles: { 0: { cellWidth: 7, halign: "center" }, 1: { cellWidth: 16 }, 2: { cellWidth: 12 }, 3: { cellWidth: 24 }, 4: { cellWidth: 28 }, 5: { cellWidth: 19 }, 6: { cellWidth: 33 }, 7: { cellWidth: 18 }, 8: { cellWidth: 19 }, 9: { cellWidth: 20, halign: "center", fontStyle: "bold" } },
+      didParseCell: d => { if (d.section === "body" && d.column.index === 9) d.cell.styles.textColor = col(d.cell.raw === "Pending" ? "Pending" : d.cell.raw); } });
+    y = doc.lastAutoTable.finalY + 2.6;
+    // 3. open items (Not OK / Pending) with remarks
+    const open = ts.filter(t => t.status !== "OK");
+    if (open.length && y < 235) {
+      section("OPEN ITEMS (NOT OK / PENDING)");
+      doc.autoTable({ theme: "grid", margin: { left: M, right: M, bottom: 42 }, startY: y,
+        head: [["Report No.", "Task / Activity", "Observation / Remarks", "Result"]],
+        body: open.map(t => [`${t.job.jobNo}/IR/${taskNo(t)}`, t.activity || "-", [t.observation, t.remarks].filter(Boolean).join(" — ") || "-", t.status]),
+        headStyles: { fillColor: LBL, textColor: INK, fontStyle: "bold", lineColor: LINE, lineWidth: 0.25, fontSize: 8 },
+        styles: { fontSize: 7.6, cellPadding: { top: 0.8, bottom: 0.8, left: 1.6, right: 1.6 }, lineColor: LINE, lineWidth: 0.25, textColor: INK },
+        columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 45 }, 3: { cellWidth: 16, fontStyle: "bold" } },
+        didParseCell: d => { if (d.section === "body" && d.column.index === 3) d.cell.styles.textColor = col(d.cell.raw); } });
+      y = doc.lastAutoTable.finalY + 2.6;
+    }
+    // signatures (bottom of page)
+    if (y > 250) { doc.addPage(); y = 20; }
+    y = Math.max(y, 252);
+    const w = (CW - 2) / 2;
+    [["Prepared by"], ["Reviewed / Approved by"]].forEach(([h], i) => {
+      const x = M + i * (w + 2);
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.rect(x, y, w, 30);
+      doc.setFillColor(...LBL); doc.rect(x, y, w, 6.2, "FD");
+      doc.setTextColor(...INK); doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text(h, x + w / 2, y + 4.3, { align: "center" });
+      doc.setDrawColor(60); doc.setLineWidth(0.25); doc.line(x + 5, y + 14, x + w * 0.65, y + 14);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.8);
+      doc.text("Name :", x + 5, y + 18.5); doc.text("Designation :", x + 5, y + 22.3); doc.text("Date :", x + 5, y + 26.1);
+    });
+    const pages = doc.getNumberOfPages();
+    for (let p = 1; p <= pages; p++) {
+      doc.setPage(p); doc.setFillColor(...ORANGE); doc.rect(0, 288, W, 0.8, "F");
+      doc.setFontSize(8.5); doc.setFont("helvetica", "bold"); doc.setTextColor(...NAVY_D); doc.text("Thermodyne Engineering Systems", M, 293);
+      const fx = M + doc.getTextWidth("Thermodyne Engineering Systems") + 3;
+      doc.setFont("helvetica", "normal"); doc.setTextColor(60, 70, 85);
+      doc.text(`|   Daily Summary Report   |   ${fmtDate(date)}   |   ${repNo}`, fx, 293);
+      doc.text(`Page ${p} of ${pages}`, W - M, 293, { align: "right" });
+    }
+    await offer(`Daily-Summary_${fmtDate(date)}.pdf`, doc.output("blob"));
+  } catch (e) { if (e?.code !== "not_granted") toast("Couldn’t build the summary. Try again."); }
+  finally { btn.disabled = false; }
 }
 
 $("xl-btn").onclick = async () => {

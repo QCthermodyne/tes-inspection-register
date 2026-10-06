@@ -2,7 +2,7 @@
 
 Job inspection app for **Thermodyne Engineering Systems**.
 
-- **Admin** (PIN) – create new jobs, edit job details, delete jobs and tasks. A folder is created per Job No. + ORF No.
+- **Admin** (PIN) – create new jobs, edit job details, delete jobs and tasks, and download the one-page **daily summary report** of all jobs for any date. A folder is created per Job No. + ORF No.
 - **Job folders** – open a folder, tap **Create task**, choose the inspection category (Hydro Test, General Inspection, DP Test, PDIR, Final Inspection) and fill in the details.
 - **Reports** – every task has its own PDF inspection report (tasks on the same date are never merged), plus an Excel register of all tasks.
 
