@@ -269,6 +269,11 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 .pill.cat{background:rgba(10,114,201,.08);color:var(--brand);border-color:rgba(10,114,201,.25)}
 .pill.cat::before{display:none}
 
+.unit-wrap{display:flex;gap:8px;align-items:stretch}
+.unit-wrap input{flex:1 1 auto;min-width:0}
+.unit-wrap select{flex:0 0 112px}
+.unit-fixed{flex:0 0 auto;display:grid;place-items:center;padding:0 16px;border-radius:var(--r-md);background:var(--sunk, #edf1f5);border:1px solid var(--stroke);font-weight:600;color:var(--muted);min-width:64px}
+
 /* admin task list */
 .atasks{display:flex;flex-direction:column;gap:8px;padding:4px 0 6px 18px;border-left:2px solid rgba(10,114,201,.25);margin-left:14px}
 .atask{display:flex;flex-direction:column;gap:6px}
@@ -1024,8 +1029,9 @@ const CATS = {
       { k: "equipment", label: "Equipment / Line" }, { k: "tagNo", label: "Tag No." },
       { k: "eqDesc", label: "Description" }, { k: "certNo", label: "Certificate / Drawing No." },
       { k: "standard", label: "Applicable Standard" }, { k: "medium", label: "Test Medium", def: "Water" },
-      { k: "pressure", label: "Test Pressure", ph: "e.g. 9 kg/cm²" }, { k: "duration", label: "Test Duration", ph: "e.g. 30 minutes" },
-      { k: "ambient", label: "Ambient Temperature", ph: "e.g. 32 °C" },
+      { k: "pressure", label: "Test Pressure", type: "unit", units: ["kg/cm²", "bar", "psi", "MPa"], ph: "e.g. 9" },
+      { k: "duration", label: "Test Duration", type: "unit", units: ["min", "hr"], ph: "e.g. 30" },
+      { k: "ambient", label: "Ambient Temperature", type: "unit", units: ["°C"], ph: "e.g. 32" },
       { k: "method", label: "Test Method / Procedure", def: "As per applicable procedure / standard.", wide: true },
     ] },
   general: { name: "General Inspection", report: "General Inspection Report", title: ["GENERAL", "INSPECTION", "REPORT"], ok: "OK / Satisfactory", bad: "Not OK / Unsatisfactory", sign: 2,
@@ -1113,6 +1119,17 @@ function renderCatFields(d) {
       wrap.append(rows, el("button", { type: "button", class: "ghost addrow", onclick: () => addRow({}) }, "+ Add row"));
       return wrap;
     }
+    if (f.type === "unit") {
+      // number + unit: the unit is added automatically
+      const str = typeof v === "string" ? v.trim() : "";
+      const mm = str.match(/^([-+]?[\d.,]+)\s*(.*)$/);
+      let num = mm ? mm[1] : str, unit = f.units[0];
+      if (mm && mm[2]) { const u = f.units.find(x => x.toLowerCase() === mm[2].toLowerCase() || (x === "min" && /^min/i.test(mm[2])) || (x === "hr" && /^(h|hr|hrs|hour|hours)$/i.test(mm[2])) || (x === "°C" && /^(°?c|deg)/i.test(mm[2]))); if (u) unit = u; else num = str; }
+      const input = el("input", { "data-num": "1", value: num, placeholder: f.ph || "", inputmode: "decimal", "aria-label": f.label });
+      const u = f.units.length > 1 ? el("select", { "data-unit": "1", "aria-label": f.label + " unit" }, ...f.units.map(x => el("option", { value: x }, x))) : el("span", { class: "unit-fixed", "data-unit-fixed": f.units[0] }, f.units[0]);
+      if (f.units.length > 1) u.value = unit;
+      return el("div", { class: "field cf", "data-k": f.k, "data-type": "unit" }, el("span", { class: "label" }, f.label), el("div", { class: "unit-wrap" }, input, u));
+    }
     if (f.type === "select") {
       const s = el("select", { "data-v": "1" }, ...f.opts.map(o => el("option", { value: o }, o)));
       s.value = typeof v === "string" && f.opts.includes(v) ? v : f.opts[0];
@@ -1127,6 +1144,11 @@ function readCat() {
   for (const w of $("cat-fields").querySelectorAll(".cf")) {
     const k = w.dataset.k, type = w.dataset.type;
     if (type === "checks") d[k] = { sel: [...w.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value), other: w.querySelector(".oth")?.value.trim() || "" };
+    else if (type === "unit") {
+      const num = w.querySelector("[data-num]").value.trim();
+      const unit = w.querySelector("[data-unit]")?.value || w.querySelector("[data-unit-fixed]")?.dataset.unitFixed || "";
+      d[k] = !num ? "" : /^[-+]?[\d.,]+$/.test(num) ? `${num} ${unit}` : num;
+    }
     else if (type === "table") d[k] = [...w.querySelectorAll(".trow")].map(r => Object.fromEntries([...r.querySelectorAll("input")].map(i => [i.dataset.c, i.value.trim()]))).filter(r => Object.values(r).some(Boolean));
     else d[k] = w.querySelector("[data-v]").value.trim();
   }
