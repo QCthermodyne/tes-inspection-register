@@ -186,7 +186,7 @@ label.pick input{position:absolute;opacity:0;width:1px;height:1px}
 .ticket button.tb:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px;border-radius:14px}
 .ticket .ids{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
 .ticket .ids .label{margin-right:3px}
-.ticket .ids b{font:700 17px/1.2 var(--f-display);letter-spacing:-.01em}
+.ticket .ids b{font:700 17px/1.2 var(--f-display);letter-spacing:-.01em;white-space:nowrap}
 .ticket .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
 .ticket .meta span:empty{display:none}
 .ticket .tacts{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding-right:12px}
@@ -261,6 +261,16 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 .login-card{width:min(400px,100%);border-radius:28px;padding:26px;display:flex;flex-direction:column;gap:18px}
 .logo-tile.big{width:74px;height:66px;border-radius:18px}
 #login-pin{font-size:24px;letter-spacing:.4em;text-align:center}
+
+/* admin task list */
+.atasks{display:flex;flex-direction:column;gap:8px;padding:4px 0 6px 18px;border-left:2px solid rgba(10,114,201,.25);margin-left:14px}
+.atask{display:flex;flex-direction:column;gap:6px}
+.atask-main{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--field);border:1px solid var(--stroke)}
+.atask-main .tx{min-width:0}
+.atask-main .tx b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atask-main .tx span{font-size:12.5px;color:var(--muted)}
+.atask-main button{min-height:38px;padding:8px 12px;font-size:14px;border-radius:12px}
+@media (max-width:460px){.atask-main{grid-template-columns:minmax(0,1fr) auto}.atask-main .pill{display:none}}
 
 /* ---------- OVERVIEW: bento ---------- */
 .bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
@@ -424,7 +434,7 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
       <button class="ghost" id="admin-lock" hidden>Lock admin</button>
     </div>
     <form class="panel" id="admin-gate" novalidate>
-      <p class="lede">Admin can create new jobs, edit job details and delete jobs or tasks. Enter the admin PIN to unlock this phone.</p>
+      <p class="lede">Admin can create new jobs, edit job details and delete jobs or tasks. Enter the admin PIN to open this section.</p>
       <div class="field"><span class="label">Admin PIN</span><input id="admin-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Enter PIN" style="font-size:22px;letter-spacing:.3em;text-align:center"></div>
       <p class="status err" id="admin-msg"></p>
       <button type="submit" class="primary" id="admin-btn">Unlock admin</button>
@@ -433,7 +443,7 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
       <button class="tag cta" id="admin-new"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Create new job</button>
       <div class="panel">
         <div class="row" style="justify-content:space-between;align-items:baseline"><h2>Manage job folders</h2><span class="count" id="admin-count"></span></div>
-        <p class="lede" style="font-size:14px">Edit job details or delete a folder. While admin is unlocked, a Delete button also appears on each task inside a folder.</p>
+        <p class="lede" style="font-size:14px">Edit job details, delete a folder, or tap <b>Tasks</b> to delete individual tasks.</p>
         <div class="list" id="admin-list"></div>
       </div>
     </div>
@@ -756,6 +766,8 @@ function renderAdmin() {
       el("span", { style: "flex:1 1 180px" }, `Delete folder Job ${j.jobNo} / ORF ${j.orfNo} and its ${j.taskCount || 0} task(s)? This can’t be undone.`),
       el("button", { type: "button", class: "danger", onclick: e => deleteFolder(j, e.currentTarget) }, "Delete folder"),
       el("button", { type: "button", class: "ghost", onclick: () => conf.hidden = true }, "Keep"));
+    const box = el("div", { class: "atasks", hidden: true });
+    if (adminOpen.has(j.id)) setTimeout(() => toggleAdminTasks(j, box, true));
     return el("div", { class: "list", style: "gap:6px" }, el("div", { class: "ticket" },
       el("span", { class: "ficon", "aria-hidden": "true" }, ico("folder", 22)),
       el("button", { class: "tb", type: "button", onclick: () => openFolder(j), "aria-label": `Open folder Job ${j.jobNo}, ORF ${j.orfNo}` },
@@ -764,9 +776,46 @@ function renderAdmin() {
           el("span", {}, el("span", { class: "label" }, "ORF "), el("b", {}, j.orfNo))),
         el("span", { class: "meta" }, el("span", {}, j.client || ""), el("span", {}, `${j.taskCount || 0} task${j.taskCount == 1 ? "" : "s"}`))),
       el("span", { class: "tacts" },
+        el("button", { class: "tedit", type: "button", onclick: () => toggleAdminTasks(j, box), "aria-label": `Manage tasks of Job ${j.jobNo}`, title: "Manage tasks" }, ico("list"), el("span", { class: "bl" }, "Tasks")),
         el("button", { class: "tedit", type: "button", onclick: () => editJob(j), "aria-label": `Edit job details for Job ${j.jobNo}`, title: "Edit job details" }, ico("edit"), el("span", { class: "bl" }, "Edit")),
-        el("button", { class: "tedit tdel", type: "button", onclick: () => conf.hidden = false, "aria-label": `Delete folder Job ${j.jobNo}`, title: "Delete folder" }, ico("trash"), el("span", { class: "bl" }, "Delete")))), conf);
+        el("button", { class: "tedit tdel", type: "button", onclick: () => conf.hidden = false, "aria-label": `Delete folder Job ${j.jobNo}`, title: "Delete folder" }, ico("trash"), el("span", { class: "bl" }, "Delete")))), conf, box);
   }));
+}
+const adminOpen = new Set();
+async function toggleAdminTasks(j, box, keep) {
+  if (!keep && !box.hidden) { box.hidden = true; adminOpen.delete(j.id); return; }
+  box.hidden = false; adminOpen.add(j.id);
+  box.replaceChildren(el("p", { class: "muted" }, "Loading tasks…"));
+  try {
+    const snap = await db.doc("jobs/" + j.id).collection("tasks").get();
+    const ts = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(byDateSeq).reverse();
+    if (!ts.length) { box.replaceChildren(el("p", { class: "muted" }, "No tasks in this folder.")); return; }
+    box.replaceChildren(...ts.map(t => {
+      const conf = el("div", { class: "confirm", hidden: true },
+        el("span", { style: "flex:1 1 160px" }, `Delete ${taskNo(t)} “${t.activity}”? This can’t be undone.`),
+        el("button", { type: "button", class: "danger", onclick: e => adminDeleteTask(j, t, row, e.currentTarget) }, "Delete task"),
+        el("button", { type: "button", class: "ghost", onclick: () => conf.hidden = true }, "Keep"));
+      const row = el("div", { class: "atask" },
+        el("div", { class: "atask-main" },
+          el("div", { class: "tx" }, el("b", {}, `${taskNo(t)} · ${t.activity || "Task"}`), el("span", {}, `${fmtDate(t.date)} · ${t.inspectedBy || ""}${t.area ? " · " + t.area : ""}`)),
+          pill(t.status),
+          el("button", { type: "button", class: "danger", onclick: () => conf.hidden = false, "aria-label": `Delete task ${taskNo(t)}` }, ico("trash"), "Delete")),
+        conf);
+      return row;
+    }));
+  } catch { box.replaceChildren(el("p", { class: "status err" }, "Couldn’t load tasks. Try again.")); }
+}
+async function adminDeleteTask(j, t, row, btn) {
+  btn.disabled = true;
+  try {
+    const col = db.doc("jobs/" + j.id).collection("tasks");
+    await col.doc(t.id).delete();
+    if (assets) for (const id of t.photoIds || []) assets.delete(id).catch(() => {});
+    const rest = (await col.get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.id !== t.id);
+    const last = [...rest].sort(byDateSeq).pop();
+    await db.doc("jobs/" + j.id).update({ taskCount: rest.length, notOk: rest.filter(x => x.status === "Not OK").length, lastDate: last ? last.date : "", updatedAt: Date.now() }).catch(() => {});
+    row.remove(); toast(`Task ${taskNo(t)} deleted.`);
+  } catch (e) { btn.disabled = false; if (e?.code === "admin_only") { setAdmin(false); toast("Admin is locked. Unlock Admin to delete."); } else toast("Couldn’t delete. Try again."); }
 }
 $("tab-jobs").onclick = () => { closeFolder(); show("jobs"); };
 $("back-btn").onclick = () => { closeFolder(); show("jobs"); };
@@ -903,10 +952,6 @@ function renderTasks() {
 }
 function taskCard(t) {
   const photoBox = el("div", { class: "photo-view list", hidden: true });
-  const conf = el("div", { class: "confirm", hidden: true },
-    el("span", { style: "flex:1 1 160px" }, "Delete this task? It will be removed from the report."),
-    el("button", { type: "button", class: "danger", onclick: () => delTask(t) }, "Delete"),
-    el("button", { type: "button", class: "ghost", onclick: () => conf.hidden = true }, "Keep"));
   return el("div", { class: "tcard" },
     el("div", { class: "hd" },
       el("div", {}, el("div", { class: "seq" }, `T-${String(t.seq || 0).padStart(3, "0")}${t.area ? " · " + t.area : ""}`), el("div", { class: "act" }, t.activity)),
@@ -921,8 +966,8 @@ function taskCard(t) {
       } }, ico("image"), `Photo${t.photoIds.length > 1 ? "s (" + t.photoIds.length + ")" : ""}`) : null,
       el("button", { type: "button", class: "primary", onclick: e => makeTaskPDF(t, e.currentTarget) }, ico("download"), "PDF report"),
       el("button", { type: "button", onclick: () => openTaskForm(t) }, ico("edit"), "Edit"),
-      isAdmin ? el("button", { type: "button", class: "danger", onclick: () => conf.hidden = false }, ico("trash"), "Delete") : null),
-    conf, photoBox);
+      null),
+    photoBox);
 }
 async function refreshJobSummary(list) {
   const j = openJob; if (!j) return;
