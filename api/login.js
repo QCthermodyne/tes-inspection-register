@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
-import { authed, authCookie, json, token, pinRequired } from "../lib/http.js";
+import { authed, authCookie, json, token, pinRequired, isAdmin } from "../lib/http.js";
 
-// GET: is this phone signed in?
+// GET: can this phone use the app, and is it unlocked as admin?
 export function GET(request) {
-  return json({ ok: authed(request), configured: !!process.env.APP_PIN, pinRequired: pinRequired() });
+  return json({ ok: authed(request), admin: isAdmin(request), configured: !!process.env.APP_PIN, pinRequired: pinRequired() });
 }
 
-// POST {pin}: sign in for 90 days.
+// POST {pin}: unlock admin (and sign in, if a PIN is required) for 90 days.
 export async function POST(request) {
   const pin = process.env.APP_PIN;
   if (!pin) return json({ error: "No PIN is set for this app yet.", code: "not_configured" }, 503);
@@ -22,7 +22,7 @@ export async function POST(request) {
   return json({ ok: true }, 200, { "set-cookie": authCookie(token(), 60 * 60 * 24 * 90) });
 }
 
-// DELETE: sign out.
+// DELETE: lock admin / sign out.
 export function DELETE() {
   return json({ ok: true }, 200, { "set-cookie": authCookie("", 0) });
 }

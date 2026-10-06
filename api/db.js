@@ -1,4 +1,7 @@
-import { authed, json, unauthorized } from "../lib/http.js";
+import { authed, isAdmin, adminOnly, json, unauthorized } from "../lib/http.js";
+
+// Fields anyone may change on a job: the summary the app keeps up to date when tasks are saved.
+const SUMMARY = new Set(["taskCount", "notOk", "lastDate", "updatedAt"]);
 import { load, mutate, clean, DOC_RE, COL_RE } from "../lib/store.js";
 
 // GET ?col=jobs | ?col=jobs/<id>/tasks  -> {docs:[{id,data}]}
@@ -48,6 +51,11 @@ export async function POST(request) {
   if (JSON.stringify(data || {}).length > 200_000) return json({ error: "Too large.", code: "invalid_argument" }, 413);
 
   const [, jobId, taskId] = m;
+  if (!isAdmin(request)) {
+    if (op === "delete") return adminOnly();
+    if (!taskId && op === "set") return adminOnly();
+    if (!taskId && op === "update" && Object.keys(data).some((k) => !SUMMARY.has(k))) return adminOnly();
+  }
   try {
     const ok = await mutate((db) => {
       const bucket = taskId ? (db.tasks[jobId] ||= {}) : db.jobs;
