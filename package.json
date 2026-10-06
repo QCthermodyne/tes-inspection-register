@@ -1,0 +1,11 @@
+{
+  "name": "tes-inspection-register",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Thermodyne Engineering Systems - job inspection register: job folders, task photos and standard PDF/Excel inspection reports.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@vercel/blob": "^2.0.0"
+  }
+}
