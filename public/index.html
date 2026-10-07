@@ -274,6 +274,13 @@ nav.tabs button[aria-current="page"]{color:#fff;background:linear-gradient(180de
 .unit-wrap select{flex:0 0 112px}
 .unit-fixed{flex:0 0 auto;display:grid;place-items:center;padding:0 16px;border-radius:var(--r-md);background:var(--sunk, #edf1f5);border:1px solid var(--stroke);font-weight:600;color:var(--muted);min-width:64px}
 
+.clist{display:flex;flex-direction:column;gap:8px}
+.citem{display:grid;grid-template-columns:22px minmax(0,1fr) 120px;gap:6px 8px;align-items:center;padding:8px 10px;border:1px solid var(--stroke);border-radius:12px;background:var(--field)}
+.citem .cnum{font-weight:600;color:var(--muted);text-align:center}
+.citem .cname{font-size:14px;font-weight:500}
+.citem select{min-height:40px;padding:8px 32px 8px 10px;font-size:14px}
+.citem .crem{grid-column:2/-1;min-height:38px;padding:8px 10px;font-size:14px}
+
 /* admin task list */
 .atasks{display:flex;flex-direction:column;gap:8px;padding:4px 0 6px 18px;border-left:2px solid rgba(10,114,201,.25);margin-left:14px}
 .atask{display:flex;flex-direction:column;gap:6px}
@@ -1072,8 +1079,33 @@ const CATS = {
       { k: "pending", label: "Pending activities", type: "table", min: 5, cols: [["obs", "Observation"], ["resp", "Responsibility"], ["target", "Target date to close"]] },
       { k: "attach", label: "Attachments", type: "checks", opts: ["Photographs", "Test Reports", "Dimensional Report", "Packing List"], other: true },
     ] },
+  idfan: { name: "ID Fan Inspection", report: "ID Fan Inspection Report", title: ["ID FAN", "INSPECTION", "REPORT"], ok: "OK / Satisfactory", bad: "Not OK / Unsatisfactory", sign: 2,
+    fields: [
+      { k: "tagNo", label: "Fan Tag No." }, { k: "make", label: "Fan Make / Model" },
+      { k: "serial", label: "Fan Serial No." }, { k: "fanType", label: "Fan Type", type: "select", opts: ["Centrifugal", "Axial"] },
+      { k: "capacity", label: "Capacity", type: "unit", units: ["m³/h", "CFM"], ph: "e.g. 45000" }, { k: "sp", label: "Static Pressure", type: "unit", units: ["mmWC", "Pa"], ph: "e.g. 250" },
+      { k: "fanRpm", label: "Fan Speed", type: "unit", units: ["RPM"], ph: "e.g. 1450" }, { k: "impeller", label: "Impeller Diameter", type: "unit", units: ["mm"], ph: "e.g. 1200" },
+      { k: "motorMake", label: "Motor Make" }, { k: "motorKw", label: "Motor Rating", type: "unit", units: ["kW", "HP"], ph: "e.g. 75" },
+      { k: "motorRpm", label: "Motor Speed", type: "unit", units: ["RPM"], ph: "e.g. 1480" }, { k: "drive", label: "Drive Type", type: "select", opts: ["Direct coupled", "Belt driven", "Fluid coupling"] },
+      { k: "checks", label: "Inspection checklist", type: "checklist", items: ["Impeller condition & balancing", "Casing, inlet cone & housing", "Shaft & alignment", "Bearings & lubrication", "Coupling / belt condition", "Foundation & anchor bolts", "Inlet / outlet damper operation", "Guards & safety fittings", "Direction of rotation", "Earthing & cable termination"] },
+      { k: "vibDE", label: "Vibration – DE", type: "unit", units: ["mm/s"], ph: "e.g. 2.8" }, { k: "vibNDE", label: "Vibration – NDE", type: "unit", units: ["mm/s"], ph: "e.g. 2.5" },
+      { k: "tempDE", label: "Bearing Temp. – DE", type: "unit", units: ["°C"], ph: "e.g. 55" }, { k: "tempNDE", label: "Bearing Temp. – NDE", type: "unit", units: ["°C"], ph: "e.g. 52" },
+      { k: "current", label: "Motor Current", type: "unit", units: ["A"], ph: "e.g. 98" }, { k: "noise", label: "Noise Level", type: "unit", units: ["dB(A)"], ph: "e.g. 82" },
+      { k: "runHrs", label: "Trial Run Duration", type: "unit", units: ["hr", "min"], ph: "e.g. 4" }, { k: "standard", label: "Applicable Standard" },
+    ] },
+  incoming: { name: "Incoming Inspection", report: "Incoming Inspection Report", title: ["INCOMING", "INSPECTION", "REPORT"], ok: "Accepted", bad: "Rejected", sign: 2,
+    fields: [
+      { k: "supplier", label: "Supplier / Vendor" }, { k: "invoice", label: "Invoice / Challan No." },
+      { k: "invDate", label: "Invoice / Challan Date", type: "date" }, { k: "grn", label: "GRN / MRN No." },
+      { k: "material", label: "Material Description", wide: true },
+      { k: "grade", label: "Material Grade / Specification" }, { k: "heat", label: "Heat No. / Batch No." },
+      { k: "mtc", label: "Test Certificate (MTC)", type: "select", opts: ["Received", "Not received", "Not applicable"] }, { k: "vehicle", label: "Vehicle No." },
+      { k: "types", label: "Inspection type", type: "checks", opts: ["Visual", "Dimensional", "Material Verification", "Document Review"], other: true },
+      { k: "items", label: "Items inspected", type: "table", min: 8, cols: [["desc", "Item Description"], ["size", "Size / Specification"], ["unit", "Unit"], ["rec", "Qty Received"], ["acc", "Qty Accepted"], ["rej", "Qty Rejected"]] },
+      { k: "attach", label: "Attachments", type: "checks", opts: ["MTC", "Invoice / Delivery Challan", "Packing List", "Photographs"], other: true },
+    ] },
 };
-const CAT_ORDER = ["hydro", "general", "dp", "pdir", "fir"];
+const CAT_ORDER = ["hydro", "general", "dp", "pdir", "fir", "idfan", "incoming"];
 const catOf = t => (t && CATS[t.cat]) ? t.cat : (/hydro/i.test(t?.activity || "") ? "hydro" : "general");
 let curCat = "hydro";
 
@@ -1088,7 +1120,7 @@ function setCat(k, keepValues) {
   const sv = $("t-status").value || "OK";
   $("t-status").replaceChildren(el("option", { value: "OK" }, c.ok), el("option", { value: "Not OK" }, c.bad), el("option", { value: "Pending" }, "Pending"));
   $("t-status").value = sv;
-  $("t-act").placeholder = k === "hydro" ? "e.g. Hydro Test HWT-5" : k === "dp" ? "e.g. DP test of shell long seam" : k === "pdir" ? "e.g. Pre-dispatch inspection of vessel" : k === "fir" ? "e.g. Final inspection before handover" : "e.g. Fit-up inspection of shell long seam";
+  $("t-act").placeholder = k === "hydro" ? "e.g. Hydro Test HWT-5" : k === "dp" ? "e.g. DP test of shell long seam" : k === "pdir" ? "e.g. Pre-dispatch inspection of vessel" : k === "fir" ? "e.g. Final inspection before handover" : k === "idfan" ? "e.g. ID fan trial run inspection" : k === "incoming" ? "e.g. Receipt inspection of SS plates" : "e.g. Fit-up inspection of shell long seam";
   $("obs-label").textContent = c.obsReq ? "Observation" : "Summary / Observation";
   $("obs-field").classList.toggle("req", !!c.obsReq);
   $("rem-label").textContent = c.obsReq ? "Remarks / Action" : "Remarks (Overall)";
@@ -1130,6 +1162,21 @@ function renderCatFields(d) {
       if (f.units.length > 1) u.value = unit;
       return el("div", { class: "field cf", "data-k": f.k, "data-type": "unit" }, el("span", { class: "label" }, f.label), el("div", { class: "unit-wrap" }, input, u));
     }
+    if (f.type === "checklist") {
+      const got = Array.isArray(v) ? v : [];
+      return el("div", { class: "field cf", style: "grid-column:1/-1", "data-k": f.k, "data-type": "checklist" }, el("span", { class: "label" }, f.label),
+        el("div", { class: "clist" }, ...f.items.map((it, i) => {
+          const prev = got.find(x => x.item === it) || {};
+          const sel = el("select", { "aria-label": it + " result" }, ...["", "OK", "Not OK", "N/A"].map(o => el("option", { value: o }, o || "Select")));
+          sel.value = prev.res || "";
+          return el("div", { class: "citem", "data-item": it }, el("span", { class: "cnum" }, String(i + 1)), el("span", { class: "cname" }, it), sel,
+            el("input", { class: "crem", placeholder: "Remarks", "aria-label": it + " remarks", value: prev.rem || "" }));
+        })));
+    }
+    if (f.type === "date") {
+      return el("div", { class: "field cf", "data-k": f.k, "data-type": "text" }, el("span", { class: "label" }, f.label),
+        el("input", { "data-v": "1", type: "date", value: typeof v === "string" ? v : "" }));
+    }
     if (f.type === "select") {
       const s = el("select", { "data-v": "1" }, ...f.opts.map(o => el("option", { value: o }, o)));
       s.value = typeof v === "string" && f.opts.includes(v) ? v : f.opts[0];
@@ -1149,6 +1196,7 @@ function readCat() {
       const unit = w.querySelector("[data-unit]")?.value || w.querySelector("[data-unit-fixed]")?.dataset.unitFixed || "";
       d[k] = !num ? "" : /^[-+]?[\d.,]+$/.test(num) ? `${num} ${unit}` : num;
     }
+    else if (type === "checklist") d[k] = [...w.querySelectorAll(".citem")].map(r => ({ item: r.dataset.item, res: r.querySelector("select").value, rem: r.querySelector(".crem").value.trim() }));
     else if (type === "table") d[k] = [...w.querySelectorAll(".trow")].map(r => Object.fromEntries([...r.querySelectorAll("input")].map(i => [i.dataset.c, i.value.trim()]))).filter(r => Object.values(r).some(Boolean));
     else d[k] = w.querySelector("[data-v]").value.trim();
   }
@@ -1157,6 +1205,9 @@ function readCat() {
 
 /* ---------- PDF engine: one report per task, in the Thermodyne formats ---------- */
 const NAVY = [24, 70, 140], NAVY_D = [16, 50, 104], ORANGE = [242, 120, 20], LBL = [225, 232, 242], LINE = [150, 166, 188], INK = [20, 28, 40];
+// The PDF's built-in font has no superscript ² / ³ glyphs: print them as plain digits.
+const SUP = s => typeof s === "string" ? s.replace(/²/g, "2").replace(/³/g, "3") : Array.isArray(s) ? s.map(SUP) : s;
+function pdfSafe(doc) { const t = doc.text.bind(doc); doc.text = (txt, ...a) => t(SUP(txt), ...a); const w = doc.getTextWidth.bind(doc); doc.getTextWidth = x => w(SUP(x)); const sp = doc.splitTextToSize.bind(doc); doc.splitTextToSize = (x, ...a) => sp(SUP(x), ...a); return doc; }
 const dash = v => (v === undefined || v === null || String(v).trim() === "") ? "-" : String(v);
 function pdfCheck(doc, x, y, on, s = 3.1) {
   doc.setDrawColor(40, 50, 65); doc.setLineWidth(0.3); doc.rect(x, y - s + 0.6, s, s);
@@ -1181,7 +1232,7 @@ async function makeTaskPDF(t, btn) {
   try {
     const j = openJob, k = catOf(t), c = CATS[k], d = t.d || {}, F = Object.fromEntries(c.fields.map(f => [f.k, f]));
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const doc = pdfSafe(new jsPDF({ unit: "mm", format: "a4" }));
     const W = 210, M = 7, CW = W - 2 * M, LW = 44;
     const repNo = `${j.jobNo}/IR/${taskNo(t)}`;
     const header = () => {
@@ -1229,10 +1280,10 @@ async function makeTaskPDF(t, btn) {
       after();
     };
     const job = key => dash(j[key]);
-    const resultRow = (label) => {
+    const resultRow = (label, remarksText) => {
       const items = [{ label: c.ok, on: t.status === "OK" }, { label: c.bad, on: t.status === "Not OK" }];
       if (t.status === "Pending") items.push({ label: "Pending", on: true });
-      doc.autoTable({ ...base, ...hookChecks, startY: y, body: [[label, { checks: items, content: "" }, "Remarks (Overall) :", dash(t.remarks || (c.obsReq ? "" : t.observation))]],
+      doc.autoTable({ ...base, ...hookChecks, startY: y, body: [[label, { checks: items, content: "" }, "Remarks (Overall) :", dash(remarksText ?? (t.remarks || (c.obsReq ? "" : t.observation)))]],
         columnStyles: { 0: { cellWidth: 34, ...lbl }, 1: { cellWidth: 84 }, 2: { cellWidth: 35, ...lbl }, 3: { cellWidth: CW - 153 } },
         didParseCell: dd => { if (dd.cell.raw && dd.cell.raw.checks) dd.cell.text = [""]; } });
       after();
@@ -1265,6 +1316,8 @@ async function makeTaskPDF(t, btn) {
     if (k === "hydro") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Inspector"), job("inspector")], [L("Job start date"), j.startDate ? fmtDate(j.startDate) : "-", L("Site / Plant"), job("site")]]);
     if (k === "general") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Site / Plant"), job("site")], [L("Job Description"), span(job("description"))], [L("Job start date"), j.startDate ? fmtDate(j.startDate) : "-", L("Job end date"), j.endDate ? fmtDate(j.endDate) : "-"]]);
     if (k === "dp") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Site / Plant"), job("site")], [L("Item / Component"), job("item"), L("Drawing / Specification No."), job("drawingNo")], [L("Manufacturer / Fabricator"), job("manufacturer"), L("Job Qty."), job("quantity")], [L("Inspection Date"), fmtDate(t.date), L("Inspection Area / Location"), dash(t.area)]]);
+    if (k === "idfan") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Site / Plant"), job("site")], [L("Item / Equipment"), job("item"), L("Drawing / Specification No."), job("drawingNo")], [L("Inspection Date"), fmtDate(t.date), L("Inspection Area / Location"), dash(t.area)]]);
+    if (k === "incoming") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Site / Plant"), job("site")], [L("PO / Contract No."), job("poNo"), L("Inspection Date"), fmtDate(t.date)]]);
     if (k === "pdir" || k === "fir") kv([[L("Job No."), job("jobNo"), L("ORF No."), job("orfNo")], [L("Client"), job("client"), L("Site / Plant"), job("site")], [L("Project Name"), job("project"), L("PO / Contract No."), job("poNo")], [L("Item / Equipment"), job("item"), L("Drawing / Specification No."), job("drawingNo")], [L("Manufacturer / Fabricator"), job("manufacturer"), L("Job Qty."), job("quantity")],
       k === "pdir" ? [L("PDIR Location"), dash(d.pdirLoc), L("Inspection Date"), fmtDate(t.date)] : [L("Final Inspection Date"), fmtDate(t.date), L("Inspection Area / Location"), dash(t.area)]]);
 
@@ -1319,6 +1372,31 @@ async function makeTaskPDF(t, btn) {
       grid(["Sl. No.", "Observation", "Responsibility", "Target date to close"], (d.pending || []).map(r => [r.obs, r.resp, r.target ? fmtDate(r.target) : ""]), 5, { 1: { cellWidth: CW - 14 - 45 - 45 }, 2: { cellWidth: 45 }, 3: { cellWidth: 45 } });
       section("ATTACHMENTS (if any)"); kv([[span("", 4, { checks: checksOf(F.attach, d.attach) })]]);
     }
+    if (k === "idfan") {
+      section("FAN & MOTOR DETAILS");
+      kv([[L("Fan Tag No."), dash(d.tagNo), L("Fan Make / Model"), dash(d.make)], [L("Fan Serial No."), dash(d.serial), L("Fan Type"), dash(d.fanType)],
+        [L("Capacity"), dash(d.capacity), L("Static Pressure"), dash(d.sp)], [L("Fan Speed"), dash(d.fanRpm), L("Impeller Diameter"), dash(d.impeller)],
+        [L("Motor Make"), dash(d.motorMake), L("Motor Rating"), dash(d.motorKw)], [L("Motor Speed"), dash(d.motorRpm), L("Drive Type"), dash(d.drive)],
+        [L("Inspected by"), dash(t.inspectedBy), L("Task / Activity"), dash(t.activity)]]);
+      section("INSPECTION CHECKLIST");
+      const cl = F.checks.items.map(it => (d.checks || []).find(x => x.item === it) || { item: it });
+      grid(["Sl. No.", "Check Point", "Result", "Remarks"], cl.map(r => [r.item, r.res || "", r.rem || ""]), cl.length, { 1: { cellWidth: 72 }, 2: { cellWidth: 22, halign: "center", fontStyle: "bold" } });
+      section("TRIAL RUN READINGS");
+      kv([[L("Vibration – DE"), dash(d.vibDE), L("Vibration – NDE"), dash(d.vibNDE)], [L("Bearing Temp. – DE"), dash(d.tempDE), L("Bearing Temp. – NDE"), dash(d.tempNDE)], [L("Motor Current"), dash(d.current), L("Noise Level"), dash(d.noise)], [L("Trial Run Duration"), dash(d.runHrs), L("Applicable Standard"), dash(d.standard)]]);
+      section("OVERALL RESULT"); resultRow("Inspection Result :", [t.observation, t.remarks].filter(Boolean).join(" "));
+    }
+    if (k === "incoming") {
+      section("MATERIAL RECEIPT DETAILS");
+      kv([[L("Supplier / Vendor"), dash(d.supplier), L("Invoice / Challan No."), dash(d.invoice)], [L("Invoice / Challan Date"), d.invDate ? fmtDate(d.invDate) : "-", L("GRN / MRN No."), dash(d.grn)],
+        [L("Material Description"), span(dash(d.material))], [L("Material Grade / Spec."), dash(d.grade), L("Heat No. / Batch No."), dash(d.heat)],
+        [L("Test Certificate (MTC)"), dash(d.mtc), L("Vehicle No."), dash(d.vehicle)], [L("Inspected by"), dash(t.inspectedBy), L("Received at"), dash(t.area)],
+        [L("Inspection type"), span("", 3, { checks: checksOf(F.types, d.types) })]]);
+      section("ITEMS INSPECTED");
+      grid(["Sl. No.", "Item Description", "Size / Specification", "Unit", "Qty Received", "Qty Accepted", "Qty Rejected"], (d.items || []).map(r => [r.desc, r.size, r.unit, r.rec, r.acc, r.rej]), 8,
+        { 1: { cellWidth: 56 }, 2: { cellWidth: 40 }, 3: { cellWidth: 14, halign: "center" }, 4: { cellWidth: 24, halign: "center" }, 5: { cellWidth: 24, halign: "center" } });
+      section("OVERALL RESULT"); resultRow("Incoming Inspection Result :");
+      section("ATTACHMENTS (if any)"); kv([[span("", 4, { checks: checksOf(F.attach, d.attach) })]]);
+    }
     signatures();
 
     /* footer on every page */
@@ -1332,7 +1410,7 @@ async function makeTaskPDF(t, btn) {
       doc.text(`|   Job No.: ${j.jobNo}   |   ORF No.: ${j.orfNo}   |   ${c.report}   |   ${repNo}`, fx, 293);
       doc.text(`Page ${p} of ${pages}`, W - M, 293, { align: "right" });
     }
-    const short = { hydro: "Hydro-Test", general: "General-Inspection", dp: "DP-Test", pdir: "PDIR", fir: "Final-Inspection" }[k];
+    const short = { hydro: "Hydro-Test", general: "General-Inspection", dp: "DP-Test", pdir: "PDIR", fir: "Final-Inspection", idfan: "ID-Fan-Inspection", incoming: "Incoming-Inspection" }[k];
     await offer(`${short}_Job-${fileSafe(j.jobNo)}_ORF-${fileSafe(j.orfNo)}_${taskNo(t)}_${fmtDate(t.date)}.pdf`, doc.output("blob"));
   } finally { if (btn) btn.disabled = false; }
 }
@@ -1358,7 +1436,7 @@ async function makeDailySummary(date, btn) {
       .sort((a, b) => (a.job.jobNo || "").localeCompare(b.job.jobNo || "") || (a.seq || 0) - (b.seq || 0));
     if (!ts.length) { toast(`No inspections on ${fmtDate(date)}.`); return; }
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const doc = pdfSafe(new jsPDF({ unit: "mm", format: "a4" }));
     const W = 210, M = 7, CW = W - 2 * M;
     try { doc.addImage(HDR_IMG, "JPEG", 0, 0, W, 31.3); } catch {}
     doc.setTextColor(255); doc.setFont("helvetica", "bold");
