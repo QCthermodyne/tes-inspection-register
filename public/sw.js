@@ -1,6 +1,6 @@
 // TES Inspection Register – service worker (makes the app installable and quick to open)
-const VERSION = "tes-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
+const VERSION = "tes-v2";
+const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/apple-touch-icon.png", "/favicon.png"];
 const CDN = "https://cdnjs.cloudflare.com/";
 
 self.addEventListener("install", e => {
