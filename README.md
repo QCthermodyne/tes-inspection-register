@@ -14,7 +14,7 @@ Works on any phone browser; on Android choose **Add to Home screen** to use it l
 |---|---|
 | App page | `public/index.html` (single page, no build step) |
 | API | `api/*.js` – Vercel Functions |
-| Data | Vercel Blob (private store) |
+| Data | Upstash Redis (free tier, via Vercel Marketplace). The old Vercel Blob snapshot is read once to import earlier records and is never modified. |
 
 ## Settings (Vercel → Project → Settings → Environment Variables)
 
@@ -22,7 +22,8 @@ Works on any phone browser; on Android choose **Add to Home screen** to use it l
 |---|---|---|
 | `PIN_REQUIRED` | optional | Set to `1` to require a PIN. Without it, anyone with the link can use the app. |
 | `APP_PIN` | yes | The admin PIN (unlocks the Admin section). Also the team PIN when `PIN_REQUIRED=1`. |
-| `BLOB_READ_WRITE_TOKEN` | yes | Added automatically when the Blob store is connected. |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | yes | Added automatically when Upstash for Redis is connected to the project. |
+| `BLOB_READ_WRITE_TOKEN` | no | Old Blob store; only read once to import earlier records. |
 
 Redeploy after changing a variable.
 

@@ -2,14 +2,24 @@ import { authed, isAdmin, adminOnly, json, unauthorized } from "../lib/http.js";
 
 // Fields anyone may change on a job: the summary the app keeps up to date when tasks are saved.
 const SUMMARY = new Set(["taskCount", "notOk", "lastDate", "updatedAt"]);
-import { load, mutate, clean, DOC_RE, COL_RE } from "../lib/store.js";
+import { load, write, version, configured, clean, DOC_RE, COL_RE } from "../lib/store.js";
 
 // GET ?col=jobs | ?col=jobs/<id>/tasks  -> {docs:[{id,data}]}
 // GET ?doc=jobs/<id>[/tasks/<tid>]       -> {data|null}
 export async function GET(request) {
   if (!authed(request)) return unauthorized();
   const q = new URL(request.url).searchParams;
-  const { db } = await load();
+  if (!configured()) return json({ error: "The database is not connected yet.", code: "not_configured" }, 503);
+  if (q.get("ver")) {
+    // Cheap change check, shared by all phones through the CDN for 15 seconds.
+    try {
+      const v = await version();
+      return new Response(JSON.stringify(v), { headers: { "content-type": "application/json", "cache-control": "public, max-age=0, s-maxage=15, stale-while-revalidate=30" } });
+    } catch (e) { console.error("version failed", e); return json({ error: "Storage is unavailable.", code: "unavailable" }, 503); }
+  }
+  let db;
+  try { ({ db } = await load()); }
+  catch (e) { console.error("load failed", e); return json({ error: "Storage is unavailable. Try again.", code: "unavailable" }, 503); }
   const col = q.get("col"), doc = q.get("doc");
   if (q.get("all")) {
     // Everything at once, for the Overview dashboard.
@@ -57,22 +67,10 @@ export async function POST(request) {
     if (!taskId && op === "update" && Object.keys(data).some((k) => !SUMMARY.has(k))) return adminOnly();
   }
   try {
-    const ok = await mutate((db) => {
-      const bucket = taskId ? (db.tasks[jobId] ||= {}) : db.jobs;
-      const key = taskId || jobId;
-      const cur = bucket[key];
-      const now = Date.now();
-      if (op === "delete") { bucket[key] = { _del: true, _u: now }; return true; }
-      if (op === "update") {
-        if (!cur || cur._del) return false;
-        bucket[key] = { ...cur, ...data, _u: now };
-        return true;
-      }
-      bucket[key] = { ...data, _u: now };
-      return true;
-    });
+    const r = await write(op, path, data);
+    const ok = r.ok;
     if (!ok) return json({ error: "Document does not exist.", code: "invalid_argument" }, 404);
-    return json({ ok: true });
+    return json({ ok: true, v: r.v });
   } catch (e) {
     console.error("db write failed", e);
     return json({ error: "Storage is unavailable. Try again.", code: "unavailable" }, 503);
